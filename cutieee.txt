@@ -1,0 +1,113 @@
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { motion } from "framer-motion";
+import { Progress } from "@/components/ui/progress";
+
+const questions = [
+  {
+    question: "What is the most romantic way to say 'I love you'?",
+    options: ["give a head", "Text it", "look into their eyes"],
+    answer: "look into their eyes",
+  },
+  {
+    question: "What's the perfect Valentine's Day gift?",
+    options: ["spending time with you", "A heartfelt letter", "Nothing"],
+    answer: "spending time with you",
+  },
+  {
+    question: "What's the best way to end a date?",
+    options: ["get a head", "A warm hug and a kiss", "Talk about work"],
+    answer: "A warm hug and a kiss",
+  },
+  {
+    question: "do i snore?",
+    options: ["no", "yes", "maybe"],
+    answer: "no",
+  },
+  {
+    question: "let's get married",
+    options: ["yes", "yes", "YES!"],
+    answer: "yes",
+  }
+];
+
+export default function LoveQuizGame() {
+  const [progress, setProgress] = useState(0);
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [isBroken, setIsBroken] = useState(false);
+  const [isExploding, setIsExploding] = useState(false);
+  const [message, setMessage] = useState("");
+
+  const handleAnswer = (selectedOption) => {
+    setMessage("");
+    if (currentQuestion === 0 && selectedOption === "give a head") {
+      setMessage("naughty boy!");
+      return;
+    }
+    if (currentQuestion === 2 && selectedOption === "get a head") {
+      setMessage("oi! be serious!");
+      return;
+    }
+    if (questions[currentQuestion].question === "let's get married" || selectedOption === questions[currentQuestion].answer) {
+      if (currentQuestion === questions.length - 1) {
+        setIsExploding(true);
+      } else {
+        setProgress(progress + 20);
+        setCurrentQuestion(currentQuestion + 1);
+      }
+    } else {
+      setIsBroken(true);
+    }
+  };
+
+  const retryGame = () => {
+    setProgress(0);
+    setCurrentQuestion(0);
+    setIsBroken(false);
+    setIsExploding(false);
+    setMessage("");
+  };
+
+  return (
+    <div className="flex flex-col items-center p-4 relative w-full h-screen overflow-hidden">
+      <h1 className="text-2xl font-bold mb-4">Grow Your Love! ❤️</h1>
+      {isBroken ? (
+        <div className="text-center">
+          <h2 className="text-xl font-semibold text-red-500">Oh no! Your heart is broken! 💔</h2>
+          <Button onClick={retryGame} className="mt-4">Try Again</Button>
+        </div>
+      ) : isExploding ? (
+        <motion.div
+          className="absolute inset-0 flex flex-col items-center justify-center bg-red-500 text-white text-4xl font-bold"
+          initial={{ scale: 0 }}
+          animate={{ scale: [1, 2, 5], opacity: [1, 0.8, 0] }}
+          transition={{ duration: 2 }}
+        >
+          ❤️ LOVE EXPLODES! ❤️
+          <p className="mt-4 text-3xl">I loveee you so muchh! babyyyy ❤️❤️❤️</p>
+        </motion.div>
+      ) : currentQuestion < questions.length ? (
+        <div className="text-center">
+          <p className="text-lg mb-2">{questions[currentQuestion].question}</p>
+          {message && <p className="text-red-500 font-bold">{message}</p>}
+          <div className="flex flex-col gap-2 mb-8">
+            {questions[currentQuestion].options.map((option, index) => (
+              <Button key={index} onClick={() => handleAnswer(option)}>{option}</Button>
+            ))}
+          </div>
+        </div>
+      ) : null}
+      {!isExploding && (
+        <motion.div
+          className={`relative w-32 h-32 ${isBroken ? "bg-gray-500" : "bg-red-500"}`}
+          animate={isBroken ? { scale: 0.5, opacity: 0.5 } : { scale: 1 + progress / 100 }}
+          style={{
+            clipPath: "path('M50 15 C20 -10, -10 50, 50 90 C110 50, 80 -10, 50 15')",
+            marginTop: "50px",
+          }}
+        />
+      )}
+      {!isExploding && <Progress value={progress} className="w-64 mt-4" />}
+    </div>
+  );
+}
